@@ -27,7 +27,7 @@ function Router() {
   
   if (settings.enabled && isLocked) {
     return (
-      <Suspense fallback={<PageLoader variant="branded" />}>
+      <Suspense fallback={<PageLoader variant="fullscreen" />}>
         <GamePage />
       </Suspense>
     );

@@ -15,7 +15,7 @@ export default function PrivacyModulePage() {
   const unlockValue = settings.moduleUnlockValues[settings.selectedModule] || '';
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-background"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
       <ModuleComponent
         onSecretGesture={showCamera}
         gestureType={settings.gestureType}
