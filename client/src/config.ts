@@ -8,7 +8,7 @@ export const CONFIG = {
   // === PRIVACY MODE ===
   // Set to true to hide the camera and show only the privacy module app for all users
   // Set to false to allow users to access the camera (privacy mode becomes optional)
-  PRIVACY_MODE: false,
+  PRIVACY_MODE: true,
 
   // === PRIVACY MODULE CONFIGURATION ===
   // Default privacy module app to show when privacy mode is active
