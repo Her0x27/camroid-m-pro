@@ -1,11 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="64" fill="#BBADA0"/>
-  <rect x="32" y="32" width="200" height="200" rx="12" fill="#EEE4DA"/>
-  <rect x="280" y="32" width="200" height="200" rx="12" fill="#EDE0C8"/>
-  <rect x="32" y="280" width="200" height="200" rx="12" fill="#F2B179"/>
-  <rect x="280" y="280" width="200" height="200" rx="12" fill="#F59563"/>
-  <text x="132" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#776E65">2</text>
-  <text x="380" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#776E65">4</text>
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#065F46"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+    <linearGradient id="tile1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34D399"/>
+      <stop offset="100%" style="stop-color:#10B981"/>
+    </linearGradient>
+    <linearGradient id="tile2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+    <linearGradient id="tile3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+    <linearGradient id="tile4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#047857"/>
+      <stop offset="100%" style="stop-color:#065F46"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="64" fill="url(#bgGrad)"/>
+  <rect x="32" y="32" width="200" height="200" rx="16" fill="url(#tile1)" filter="url(#glow)"/>
+  <rect x="280" y="32" width="200" height="200" rx="16" fill="url(#tile2)" filter="url(#glow)"/>
+  <rect x="32" y="280" width="200" height="200" rx="16" fill="url(#tile3)" filter="url(#glow)"/>
+  <rect x="280" y="280" width="200" height="200" rx="16" fill="url(#tile4)" filter="url(#glow)"/>
+  <text x="132" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#FFF">2</text>
+  <text x="380" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#FFF">4</text>
   <text x="132" y="408" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#FFF">8</text>
   <text x="380" y="408" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#FFF">16</text>
 </svg>
