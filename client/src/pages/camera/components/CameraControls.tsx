@@ -209,7 +209,7 @@ const GalleryButton = memo(function GalleryButton({
   return (
     <div className="absolute left-4 flex items-center">
       <button
-        className="bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/50 shadow-lg relative transition-opacity active:opacity-70"
+        className="bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/30 shadow-sm relative transition-opacity active:opacity-70"
         onClick={onNavigate}
         data-testid="button-gallery"
       >
@@ -308,7 +308,7 @@ const RightControls = memo(function RightControls({
   return (
     <div className="absolute right-4 flex items-center gap-2">
       <button
-        className="bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/50 shadow-lg relative transition-opacity active:opacity-70"
+        className="bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/30 shadow-sm relative transition-opacity active:opacity-70"
         onClick={onOpenNote}
         data-testid="button-note"
       >
@@ -323,7 +323,7 @@ const RightControls = memo(function RightControls({
       <div className="relative">
         {showEditorIcon && (
           <button
-            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/50 shadow-lg transition-all animate-in fade-in zoom-in-90 duration-200"
+            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/30 shadow-sm transition-all animate-in fade-in zoom-in-90 duration-200"
             onClick={handleVisualEditor}
             onPointerLeave={handleEditorIconPointerLeave}
             data-testid="button-visual-editor"
@@ -334,7 +334,7 @@ const RightControls = memo(function RightControls({
           </button>
         )}
         <button
-          className="bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/50 shadow-lg transition-opacity active:opacity-70"
+          className="bg-card/80 backdrop-blur-md rounded-xl p-2 border border-border/30 shadow-sm transition-opacity active:opacity-70"
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerLeave}
