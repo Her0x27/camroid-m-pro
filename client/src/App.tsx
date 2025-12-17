@@ -1,4 +1,4 @@
-import { useState, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SettingsProvider } from "@/lib/settings-context";
 import { I18nProvider } from "@/lib/i18n";
-import { PrivacyProvider, usePrivacy, loadPrivacySettings } from "@/lib/privacy-context";
+import { PrivacyProvider, usePrivacy } from "@/lib/privacy-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { SplashScreen } from "@/components/splash-screen";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -21,31 +21,6 @@ const SettingsPage = createTrackedLazy(MODULE_NAMES.settings, () => import("@/pa
 const GamePage = createTrackedLazy(MODULE_NAMES.game, () => import("@/pages/game"));
 const VisualEditorWatermarkPage = createTrackedLazy(MODULE_NAMES.watermarkPreview, () => import("@/pages/watermark-ve"));
 const NotFound = createTrackedLazy(MODULE_NAMES.notFound, () => import("@/pages/not-found"));
-
-function Router() {
-  const { settings, isLocked } = usePrivacy();
-  
-  if (settings.enabled && isLocked) {
-    return (
-      <Suspense fallback={<PageLoader variant="fullscreen" />}>
-        <GamePage />
-      </Suspense>
-    );
-  }
-  
-  return (
-    <Suspense fallback={<PageLoader variant="branded" />}>
-      <Switch>
-        <Route path="/" component={CameraPage} />
-        <Route path="/gallery" component={GalleryPage} />
-        <Route path="/photo/:id" component={PhotoDetailPage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/ve-watermark" component={VisualEditorWatermarkPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
-  );
-}
 
 function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -67,29 +42,62 @@ function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-function App() {
-  const [showSplash, setShowSplash] = useState(() => {
-    const privacySettings = loadPrivacySettings();
-    if (privacySettings.enabled) {
-      return false;
+function AppContent() {
+  const { settings, isLocked, isConfigLoading } = usePrivacy();
+  const [showSplash, setShowSplash] = useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (!isConfigLoading && showSplash === null) {
+      if (settings.enabled) {
+        setShowSplash(false);
+      } else {
+        const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
+        setShowSplash(!hasSeenSplash);
+      }
     }
-    
-    const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
-    return !hasSeenSplash;
-  });
+  }, [isConfigLoading, settings.enabled, showSplash]);
 
   const handleSplashComplete = () => {
     sessionStorage.setItem("hasSeenSplash", "true");
     setShowSplash(false);
   };
 
+  if (isConfigLoading || showSplash === null) {
+    return <PageLoader variant="fullscreen" />;
+  }
+
+  if (settings.enabled && isLocked) {
+    return (
+      <Suspense fallback={<PageLoader variant="fullscreen" />}>
+        <GamePage />
+      </Suspense>
+    );
+  }
+
+  return (
+    <>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      <Suspense fallback={<PageLoader variant="branded" />}>
+        <Switch>
+          <Route path="/" component={CameraPage} />
+          <Route path="/gallery" component={GalleryPage} />
+          <Route path="/photo/:id" component={PhotoDetailPage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route path="/ve-watermark" component={VisualEditorWatermarkPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+      <Toaster />
+      <PrivacyOverlay />
+    </>
+  );
+}
+
+function App() {
   return (
     <Providers>
       <ErrorBoundary>
-        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-        <Router />
-        <Toaster />
-        <PrivacyOverlay />
+        <AppContent />
       </ErrorBoundary>
     </Providers>
   );
