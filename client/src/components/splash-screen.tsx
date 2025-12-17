@@ -298,8 +298,24 @@ function BrandTextAnimation() {
   );
 }
 
+function isPrivacyModeEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const saved = window.localStorage.getItem("app-mode");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.enabled === true;
+    }
+  } catch {
+  }
+  return false;
+}
+
 export function SplashScreen({ onComplete }: SplashScreenProps) {
-  const [phase, setPhase] = useState<"hand" | "camera" | "text" | "loading" | "complete">("hand");
+  const privacyMode = useRef(isPrivacyModeEnabled());
+  const [phase, setPhase] = useState<"hand" | "camera" | "text" | "loading" | "complete">(
+    privacyMode.current ? "loading" : "hand"
+  );
   const loaderContext = useLazyLoaderOptional();
   const initializedRef = useRef(false);
   const preloadStartedRef = useRef(false);
@@ -361,7 +377,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                 <CameraFlash key="camera" onComplete={handleCameraComplete} />
               )}
               
-              {(phase === "text" || phase === "loading") && (
+              {(phase === "text" || phase === "loading") && !privacyMode.current && (
                 <motion.div
                   key="content"
                   className="flex flex-col items-center gap-8"
@@ -426,16 +442,42 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
                   )}
                 </motion.div>
               )}
+
+              {phase === "loading" && privacyMode.current && (
+                <motion.div
+                  key="privacy-loading"
+                  className="flex flex-col items-center gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <motion.div
+                    className="w-8 h-8 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <motion.p
+                    className="text-sm text-muted-foreground"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    Загрузка...
+                  </motion.p>
+                </motion.div>
+              )}
             </AnimatePresence>
 
-            <motion.div
-              className="absolute -z-10 w-96 h-96 rounded-full"
-              style={{
-                background: "radial-gradient(circle, rgb(16 185 129 / 0.05) 0%, transparent 60%)",
-              }}
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
+            {!privacyMode.current && (
+              <motion.div
+                className="absolute -z-10 w-96 h-96 rounded-full"
+                style={{
+                  background: "radial-gradient(circle, rgb(16 185 129 / 0.05) 0%, transparent 60%)",
+                }}
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
           </div>
         </motion.div>
       )}
