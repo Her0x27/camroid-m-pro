@@ -263,7 +263,7 @@ export const CameraViewfinder = memo(function CameraViewfinder({
 
       {showMaskButton && onMask && !adjustmentMode && (
         <button
-          className="absolute right-4 top-32 z-30 safe-top w-14 h-14 flex items-center justify-center bg-transparent rounded-xl border border-border/30 shadow-md transition-colors"
+          className="absolute right-4 top-32 z-30 safe-top w-14 h-14 flex items-center justify-center bg-card/60 rounded-xl border border-border/30 shadow-md transition-colors"
           onClick={onMask}
           data-testid="button-mask"
         >
