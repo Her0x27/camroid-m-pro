@@ -267,7 +267,7 @@ export const CameraViewfinder = memo(function CameraViewfinder({
           onClick={onMask}
           data-testid="button-mask"
         >
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/20 border border-emerald-500/10">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-500/20 border border-emerald-500/30">
             <EyeOff className="w-5 h-5 text-emerald-500 drop-shadow-[0_0_4px_rgb(16,185,129)]" />
           </div>
         </button>
