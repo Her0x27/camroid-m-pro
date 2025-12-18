@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import { getConfig, initConfig, subscribeToConfig, updateConfig as updateRemoteConfig, isBackendAvailable, type DynamicConfig } from "./config-loader";
 import { privacyModuleRegistry } from "@/privacy_modules";
 import { resolveFavicon } from "@/privacy_modules/types";
+import { obfuscate, deobfuscate } from "./obfuscation";
 
 export type GestureType = 'patternUnlock' | 'severalFingers';
 
@@ -71,15 +72,17 @@ export function loadPrivacySettings(): PrivacySettings {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
-      return {
-        ...defaultSettings,
-        ...parsed,
-        moduleUnlockValues: {
-          ...config.MODULE_UNLOCK_VALUES,
-          ...parsed.moduleUnlockValues,
-        },
-      };
+      const parsed = deobfuscate(saved) as any;
+      if (parsed) {
+        return {
+          ...defaultSettings,
+          ...parsed,
+          moduleUnlockValues: {
+            ...config.MODULE_UNLOCK_VALUES,
+            ...parsed.moduleUnlockValues,
+          },
+        };
+      }
     }
   } catch {
     // Expected: localStorage may be unavailable or data corrupted
@@ -93,7 +96,8 @@ function saveSettings(settings: PrivacySettings): void {
   }
   
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    const obfuscated = obfuscate(settings);
+    localStorage.setItem(STORAGE_KEY, obfuscated);
   } catch {
     // Expected: localStorage may be unavailable in incognito mode
   }

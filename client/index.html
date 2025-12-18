@@ -26,6 +26,7 @@
     <script>
       (function(){
         try {
+          var KEY='cmrd_px';function xorDec(s,k){var r='';for(var i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return r;}function deobf(e){try{if(!e)return null;var x=atob(e);var j=xorDec(x,KEY);return JSON.parse(j);}catch{return null;}}
           var s = localStorage.getItem('app-mode');
           var modules = {
             'game-2048': { t: 'Game 2048', f: '/game-icon.svg', d: 'Slide tiles to combine and reach 2048.' },
@@ -34,7 +35,7 @@
           };
           var c;
           if (s) {
-            var p = JSON.parse(s);
+            var p = deobf(s);
             if (p && p.enabled) {
               var m = p.selectedModule || 'game-2048';
               c = modules[m] || modules['game-2048'];

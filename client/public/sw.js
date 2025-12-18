@@ -62,6 +62,26 @@ const DEFAULT_MANIFEST_DATA = {
   categories: ['photography', 'utilities'],
 };
 
+// Deobfuscation functions for localStorage data
+function xorDecodeValue(str, key) {
+  var result = '';
+  for (var i = 0; i < str.length; i++) {
+    result += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return result;
+}
+
+function deobfuscateValue(encoded) {
+  try {
+    if (!encoded) return null;
+    var xored = atob(encoded);
+    var json = xorDecodeValue(xored, 'cmrd_px');
+    return JSON.parse(json);
+  } catch (e) {
+    return null;
+  }
+}
+
 // Generate dynamic manifest based on app mode from localStorage
 function generateManifest() {
   let moduleData = DEFAULT_MANIFEST_DATA;
@@ -69,7 +89,7 @@ function generateManifest() {
   try {
     const appMode = localStorage.getItem('app-mode');
     if (appMode) {
-      const config = JSON.parse(appMode);
+      const config = deobfuscateValue(appMode);
       if (config && config.enabled) {
         const moduleId = config.selectedModule || 'game-2048';
         moduleData = MODULES_MANIFEST_DATA[moduleId] || DEFAULT_MANIFEST_DATA;
