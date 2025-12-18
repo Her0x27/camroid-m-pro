@@ -267,7 +267,7 @@ export const CameraViewfinder = memo(function CameraViewfinder({
           onClick={onMask}
           data-testid="button-mask"
         >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/20 border border-emerald-500/40">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-500/20 border border-emerald-500/30">
             <EyeOff className="w-4 h-4 text-emerald-500 drop-shadow-[0_0_4px_rgb(16,185,129)]" />
           </div>
         </button>
@@ -308,14 +308,14 @@ const AdjustmentControls = memo(function AdjustmentControls({ onConfirm, onCance
   return (
     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-6">
       <button
-        className="w-14 h-14 rounded-full bg-red-500/90 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-red-600 flex items-center justify-center shadow-lg transition-colors"
+        className="w-14 h-14 rounded-full bg-red-500/90 backdrop-blur-sm border border-white/20 text-white hover:bg-red-600 flex items-center justify-center shadow-lg transition-colors"
         onClick={onCancel}
         data-testid="button-adjustment-cancel"
       >
         <X className="w-7 h-7" />
       </button>
       <button
-        className="w-14 h-14 rounded-full bg-emerald-500/90 backdrop-blur-sm border-2 border-white/30 text-white hover:bg-emerald-600 flex items-center justify-center shadow-lg transition-colors"
+        className="w-14 h-14 rounded-full bg-emerald-500/90 backdrop-blur-sm border border-white/20 text-white hover:bg-emerald-600 flex items-center justify-center shadow-lg transition-colors"
         onClick={onConfirm}
         data-testid="button-adjustment-confirm"
       >
