@@ -6,15 +6,15 @@
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Game 2048" id="apple-title" />
-    <meta name="description" content="Slide tiles to combine and reach 2048." id="meta-desc" />
+    <meta name="apple-mobile-web-app-title" content="Camroid M" id="apple-title" />
+    <meta name="description" content="Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying." id="meta-desc" />
     
     <!-- Block search engine indexing - private application -->
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
     <meta name="googlebot" content="noindex, nofollow" />
     
     <!-- Additional PWA Meta Tags -->
-    <meta name="application-name" content="Game 2048" id="app-name" />
+    <meta name="application-name" content="Camroid M" id="app-name" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     
@@ -27,16 +27,23 @@
       (function(){
         try {
           var s = localStorage.getItem('app-mode');
-          if (!s) return;
-          var p = JSON.parse(s);
-          if (!p || !p.enabled) return;
-          var m = p.selectedModule || 'game-2048';
           var modules = {
             'game-2048': { t: 'Game 2048', f: '/game-icon.svg', d: 'Slide tiles to combine and reach 2048.' },
             'calculator': { t: 'Calculator', f: '/calculator-icon.svg', d: 'Simple calculator for everyday use.' },
             'notepad': { t: 'Notepad', f: '/notepad-icon.svg', d: 'Simple notepad for notes and reminders.' }
           };
-          var c = modules[m] || modules['game-2048'];
+          var c;
+          if (s) {
+            var p = JSON.parse(s);
+            if (p && p.enabled) {
+              var m = p.selectedModule || 'game-2048';
+              c = modules[m] || modules['game-2048'];
+            } else {
+              c = { t: 'Camroid M', f: '/favicon.svg', d: 'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.' };
+            }
+          } else {
+            c = { t: 'Camroid M', f: '/favicon.svg', d: 'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.' };
+          }
           document.title = c.t;
           var ua = navigator.userAgent;
           var suffix = /iPad|iPhone|iPod/.test(ua) ? '-ios' : /Android/.test(ua) ? '-android' : '';
@@ -57,7 +64,7 @@
       })();
     </script>
     
-    <title>Game 2048</title>
+    <title>Camroid M</title>
   </head>
   <body>
     <div id="root"></div>
