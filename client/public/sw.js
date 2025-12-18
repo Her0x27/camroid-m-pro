@@ -7,7 +7,6 @@ const CACHE_NAME = `zeroday-cache-v${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json',
   '/favicon.png'
 ];
 
@@ -22,6 +21,106 @@ const RUNTIME_CACHE_PATTERNS = [
   /\.webp$/
 ];
 
+// Module manifest data for dynamic manifest generation
+const MODULES_MANIFEST_DATA = {
+  'game-2048': {
+    name: 'Game 2048',
+    shortName: 'Game 2048',
+    description: 'Простая, но затягивающая головоломка. Соединяйте плитки, чтобы собрать 2048 и наслаждайтесь бесконечными испытаниями.',
+    iconPath: '/game-icon.svg',
+    iconIosPath: '/game-icon-ios.svg',
+    iconAndroidPath: '/game-icon-android.svg',
+    categories: ['games', 'productivity'],
+  },
+  'calculator': {
+    name: 'Calculator',
+    shortName: 'Calculator',
+    description: 'Simple and elegant calculator for everyday calculations. Fast, accurate, and easy to use.',
+    iconPath: '/calculator-icon.svg',
+    iconIosPath: '/calculator-icon-ios.svg',
+    iconAndroidPath: '/calculator-icon-android.svg',
+    categories: ['games', 'productivity'],
+  },
+  'notepad': {
+    name: 'Notepad',
+    shortName: 'Notepad',
+    description: 'Simple notepad for quick notes and reminders. Keep your thoughts organized and accessible.',
+    iconPath: '/notepad-icon.svg',
+    iconIosPath: '/notepad-icon-ios.svg',
+    iconAndroidPath: '/notepad-icon-android.svg',
+    categories: ['games', 'productivity'],
+  },
+};
+
+const DEFAULT_MANIFEST_DATA = {
+  name: 'Camroid M',
+  shortName: 'Camroid M',
+  description: 'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.',
+  iconPath: '/favicon.svg',
+  iconIosPath: '/favicon.svg',
+  iconAndroidPath: '/favicon.svg',
+  categories: ['photography', 'utilities'],
+};
+
+// Generate dynamic manifest based on app mode from localStorage
+function generateManifest() {
+  let moduleData = DEFAULT_MANIFEST_DATA;
+  
+  try {
+    const appMode = localStorage.getItem('app-mode');
+    if (appMode) {
+      const config = JSON.parse(appMode);
+      if (config && config.enabled) {
+        const moduleId = config.selectedModule || 'game-2048';
+        moduleData = MODULES_MANIFEST_DATA[moduleId] || DEFAULT_MANIFEST_DATA;
+      }
+    }
+  } catch (e) {
+    console.warn('[SW] Failed to read app-mode from localStorage:', e);
+  }
+
+  return {
+    name: moduleData.name,
+    short_name: moduleData.shortName,
+    version: '1.0.0',
+    description: moduleData.description,
+    start_url: '/',
+    display: 'fullscreen',
+    orientation: 'portrait',
+    background_color: '#0a0a0a',
+    theme_color: '#0a0a0a',
+    icons: [
+      {
+        src: moduleData.iconPath,
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: moduleData.iconPath.replace('.svg', '.png'),
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any maskable',
+      },
+      {
+        src: moduleData.iconIosPath,
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: moduleData.iconAndroidPath,
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+    ],
+    categories: moduleData.categories,
+    lang: 'en',
+    dir: 'ltr',
+  };
+}
+
 // Helper to check if URL matches runtime cache patterns
 function shouldCacheRuntime(url) {
   const pathname = new URL(url).pathname;
@@ -35,7 +134,7 @@ self.addEventListener('install', (event) => {
       console.log('[SW] Precaching static assets');
       return cache.addAll(STATIC_ASSETS).catch((error) => {
         console.warn('[SW] Failed to precache some assets:', error);
-        return cache.addAll(['/manifest.json', '/favicon.png']);
+        return cache.addAll(['/favicon.png']);
       });
     })
   );
@@ -74,8 +173,19 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip API requests and dev server requests
   const url = new URL(request.url);
+  
+  // Handle manifest.json dynamically (no caching)
+  if (url.pathname === '/manifest.json') {
+    event.respondWith(
+      Promise.resolve(new Response(JSON.stringify(generateManifest()), {
+        headers: { 'Content-Type': 'application/manifest+json' }
+      }))
+    );
+    return;
+  }
+
+  // Skip API requests and dev server requests
   if (url.pathname.startsWith('/api/') || 
       request.url.includes('hot-update') ||
       request.url.includes('ws://') ||
