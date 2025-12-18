@@ -1,5 +1,5 @@
 import { memo, RefObject, useRef, useCallback, useState } from "react";
-import { Camera, EyeOff, FileText, Crosshair, X, Check } from "lucide-react";
+import { Camera, EyeOff, Crosshair, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reticle } from "@/components/reticles";
 import { LevelIndicator } from "@/components/level-indicator";
@@ -22,7 +22,6 @@ interface CameraViewfinderProps {
   };
   showMaskButton?: boolean;
   onMask?: () => void;
-  note?: string;
   showLevelIndicator?: boolean;
   stabilizationEnabled?: boolean;
   stability?: number;
@@ -53,7 +52,6 @@ export const CameraViewfinder = memo(function CameraViewfinder({
   orientationData,
   showMaskButton,
   onMask,
-  note,
   showLevelIndicator,
   stabilizationEnabled,
   stability,
@@ -246,10 +244,6 @@ export const CameraViewfinder = memo(function CameraViewfinder({
 
       {(isReady || adjustmentMode) && <Reticle config={reticleConfig} dynamicColor={reticleColor} position={displayPosition} />}
 
-      {isReady && note && !adjustmentMode && (
-        <NoteOverlay note={note} />
-      )}
-
       {isReady && showLevelIndicator && !adjustmentMode && (
         <LevelIndicator
           tilt={orientationData.tilt}
@@ -394,29 +388,6 @@ const ErrorOverlay = memo(function ErrorOverlay({ error, onRetry }: ErrorOverlay
   );
 });
 
-interface NoteOverlayProps {
-  note: string;
-}
-
-const NoteOverlay = memo(function NoteOverlay({ note }: NoteOverlayProps) {
-  if (!note.trim()) return null;
-  
-  return (
-    <div className="absolute top-4 left-4 z-20 safe-top max-w-[60%]">
-      <div className="bg-card/80 backdrop-blur-md rounded-xl px-2 py-1.5 border border-border/50 shadow-lg">
-        <div className="flex items-start gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-emerald-500/20 border border-emerald-500/40">
-            <FileText className="w-4 h-4 text-emerald-500 drop-shadow-[0_0_4px_rgb(16,185,129)]" />
-          </div>
-          <p className="font-sans text-sm text-foreground/90 leading-tight line-clamp-3 pt-0.5" data-testid="text-note-overlay">
-            {note}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-});
-
 interface StabilityIndicatorProps {
   stability: number;
   isStable: boolean;
@@ -426,7 +397,7 @@ const StabilityIndicator = memo(function StabilityIndicator({ stability, isStabl
   const { t } = useI18n();
   
   return (
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
+    <div className="absolute left-4 top-4 z-20 safe-top">
       <div className="bg-card/80 backdrop-blur-md rounded-xl px-3 py-2.5 border border-border/50 shadow-lg">
         <div className="flex items-center gap-2.5">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
