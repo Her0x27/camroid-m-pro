@@ -88,16 +88,23 @@ function generateManifest() {
   
   try {
     const appMode = localStorage.getItem('app-mode');
+    console.log('[SW] app-mode from storage:', appMode ? 'exists' : 'not found');
+    
     if (appMode) {
       const config = deobfuscateValue(appMode);
+      console.log('[SW] deobfuscated config:', config);
+      
       if (config && config.enabled) {
         const moduleId = config.selectedModule || 'game-2048';
+        console.log('[SW] selected module:', moduleId);
         moduleData = MODULES_MANIFEST_DATA[moduleId] || DEFAULT_MANIFEST_DATA;
       }
     }
   } catch (e) {
     console.warn('[SW] Failed to read app-mode from localStorage:', e);
   }
+  
+  console.log('[SW] generating manifest for:', moduleData.name);
 
   return {
     name: moduleData.name,
@@ -199,7 +206,12 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname === '/manifest.json') {
     event.respondWith(
       Promise.resolve(new Response(JSON.stringify(generateManifest()), {
-        headers: { 'Content-Type': 'application/manifest+json' }
+        headers: { 
+          'Content-Type': 'application/manifest+json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       }))
     );
     return;

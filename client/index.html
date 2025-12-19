@@ -26,42 +26,63 @@
     <script>
       (function(){
         try {
-          var KEY='cmrd_px';function xorDec(s,k){var r='';for(var i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return r;}function deobf(e){try{if(!e)return null;var x=atob(e);var j=xorDec(x,KEY);return JSON.parse(j);}catch{return null;}}
-          var s = localStorage.getItem('app-mode');
-          var modules = {
-            'game-2048': { t: 'Game 2048', f: '/game-icon.svg', d: 'Slide tiles to combine and reach 2048.' },
-            'calculator': { t: 'Calculator', f: '/calculator-icon.svg', d: 'Simple calculator for everyday use.' },
-            'notepad': { t: 'Notepad', f: '/notepad-icon.svg', d: 'Simple notepad for notes and reminders.' }
+          var KEY='cmrd_px';
+          function xorDec(s,k){var r='';for(var i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return r;}
+          function deobf(e){try{if(!e)return null;var x=atob(e);var j=xorDec(x,KEY);return JSON.parse(j);}catch{return null;}}
+          function updateMetadata(moduleData){
+            document.title=moduleData.t;
+            var ua=navigator.userAgent;
+            var suffix=/iPad|iPhone|iPod/.test(ua)?'-ios':/Android/.test(ua)?'-android':'';
+            var icon=moduleData.f.replace('.svg',suffix+'.svg');
+            var fs=document.getElementById('favicon-svg');
+            var fp=document.getElementById('favicon-png');
+            var ai=document.getElementById('apple-icon');
+            var at=document.getElementById('apple-title');
+            var an=document.getElementById('app-name');
+            var md=document.getElementById('meta-desc');
+            if(fs)fs.href=icon;
+            if(fp)fp.href=icon.replace('.svg','.png');
+            if(ai)ai.href=icon;
+            if(at)at.content=moduleData.t;
+            if(an)an.content=moduleData.t;
+            if(md)md.content=moduleData.d;
+          }
+          var s=localStorage.getItem('app-mode');
+          var modules={
+            'game-2048':{t:'Game 2048',f:'/game-icon.svg',d:'Slide tiles to combine and reach 2048.'},
+            'calculator':{t:'Calculator',f:'/calculator-icon.svg',d:'Simple calculator for everyday use.'},
+            'notepad':{t:'Notepad',f:'/notepad-icon.svg',d:'Simple notepad for notes and reminders.'}
           };
           var c;
-          if (s) {
-            var p = deobf(s);
-            if (p && p.enabled) {
-              var m = p.selectedModule || 'game-2048';
-              c = modules[m] || modules['game-2048'];
-            } else {
-              c = { t: 'Camroid M', f: '/favicon.svg', d: 'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.' };
+          if(s){
+            var p=deobf(s);
+            if(p&&p.enabled){
+              var m=p.selectedModule||'game-2048';
+              c=modules[m]||modules['game-2048'];
+            }else{
+              c={t:'Camroid M',f:'/favicon.svg',d:'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.'};
             }
-          } else {
-            c = { t: 'Camroid M', f: '/favicon.svg', d: 'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.' };
+          }else{
+            c={t:'Camroid M',f:'/favicon.svg',d:'Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.'};
           }
-          document.title = c.t;
-          var ua = navigator.userAgent;
-          var suffix = /iPad|iPhone|iPod/.test(ua) ? '-ios' : /Android/.test(ua) ? '-android' : '';
-          var icon = c.f.replace('.svg', suffix + '.svg');
-          var fs = document.getElementById('favicon-svg');
-          var fp = document.getElementById('favicon-png');
-          var ai = document.getElementById('apple-icon');
-          var at = document.getElementById('apple-title');
-          var an = document.getElementById('app-name');
-          var md = document.getElementById('meta-desc');
-          if (fs) fs.href = icon;
-          if (fp) fp.href = icon.replace('.svg', '.png');
-          if (ai) ai.href = icon;
-          if (at) at.content = c.t;
-          if (an) an.content = c.t;
-          if (md) md.content = c.d;
-        } catch(e) {}
+          updateMetadata(c);
+          window.addEventListener('storage',function(e){
+            if(e.key==='app-mode'){
+              var ns=localStorage.getItem('app-mode');
+              if(ns){
+                var np=deobf(ns);
+                if(np&&np.enabled){
+                  var nm=np.selectedModule||'game-2048';
+                  var nc=modules[nm]||modules['game-2048'];
+                  updateMetadata(nc);
+                  if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+                    navigator.serviceWorker.controller.postMessage({type:'MANIFEST_UPDATE'});
+                  }
+                }
+              }
+            }
+          });
+        }catch(e){}
       })();
     </script>
     
