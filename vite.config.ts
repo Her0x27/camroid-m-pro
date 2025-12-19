@@ -36,9 +36,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Obfuscate file names in production
-        entryFileNames: process.env.NODE_ENV === "production" ? '[name].[hash].js' : '[name].js',
-        chunkFileNames: process.env.NODE_ENV === "production" ? '[name].[hash].js' : '[name].js',
-        assetFileNames: process.env.NODE_ENV === "production" ? '[name].[hash][extname]' : '[name][extname]',
+        entryFileNames: process.env.NODE_ENV === "production" ? '[hash].js' : '[name].js',
+        chunkFileNames: process.env.NODE_ENV === "production" ? '[hash].js' : '[name].js',
+        assetFileNames: process.env.NODE_ENV === "production" ? '[hash][extname]' : '[name][extname]',
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
           'vendor-radix': [
