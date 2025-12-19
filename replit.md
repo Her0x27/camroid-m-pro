@@ -270,6 +270,23 @@ npm run build
 - Vite rollupOptions.output configuration uses '[hash].js' format
 - Custom obfuscator plugin does not modify file names
 
+## Build & Deployment Scripts
+
+### Quick Setup
+```bash
+bash setup.sh              # Verify all tools installed
+./build.sh --setup --go    # Full setup + production build
+```
+
+### Build Options
+```bash
+./build.sh                                    # Dev build (Node.js)
+./build.sh --go                               # Production build (Go)
+./build.sh --go --clean --obfuscate           # Full production (Go + obfuscation)
+```
+
+See **INSTALL.md** for complete build documentation and deployment options.
+
 ## Next Steps (Optional)
 - [ ] Implement manifest versioning query parameter
 - [ ] Add analytics (privacy-respecting)

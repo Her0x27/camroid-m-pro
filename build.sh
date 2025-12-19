@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Camroid M - Build Script
+# Camroid M - Full Build Script (Frontend + Backend)
 # Usage: ./build.sh [options]
 # Options:
 #   --go           Build Go server instead of Node.js
 #   --obfuscate    Enable JavaScript obfuscation/scrambling
 #   --clean        Clean dist folder before build
+#   --setup        Run setup checks first
 #   --help         Show this help message
 
 set -e
@@ -22,6 +23,7 @@ NC='\033[0m' # No Color
 USE_GO=false
 OBFUSCATE=false
 CLEAN=false
+SETUP=false
 
 # Version info
 VERSION="1.0.0"
@@ -42,8 +44,12 @@ while [[ $# -gt 0 ]]; do
             CLEAN=true
             shift
             ;;
+        --setup)
+            SETUP=true
+            shift
+            ;;
         --help)
-            echo "Camroid M - Build Script"
+            echo "Camroid M - Full Build Script"
             echo ""
             echo "Usage: ./build.sh [options]"
             echo ""
@@ -51,12 +57,14 @@ while [[ $# -gt 0 ]]; do
             echo "  --go           Build Go server instead of Node.js"
             echo "  --obfuscate    Enable JavaScript obfuscation/scrambling"
             echo "  --clean        Clean dist folder before build"
+            echo "  --setup        Run setup checks first"
             echo "  --help         Show this help message"
             echo ""
             echo "Examples:"
-            echo "  ./build.sh                    # Node.js build"
-            echo "  ./build.sh --go               # Go server build"
-            echo "  ./build.sh --go --obfuscate   # Go build with JS obfuscation"
+            echo "  ./build.sh                              # Node.js build"
+            echo "  ./build.sh --go                         # Go server build"
+            echo "  ./build.sh --go --obfuscate             # Go build with JS obfuscation"
+            echo "  ./build.sh --go --clean --obfuscate     # Full clean production build"
             exit 0
             ;;
         *)
@@ -66,6 +74,16 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Run setup if requested
+if [ "$SETUP" = true ]; then
+    echo -e "${YELLOW}Running setup checks...${NC}"
+    if [ -f "setup.sh" ]; then
+        bash setup.sh || exit 1
+    else
+        echo -e "${YELLOW}setup.sh not found, skipping setup${NC}"
+    fi
+fi
 
 echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║  ${CYAN}Camroid M - Production Build${BLUE}          ║${NC}"
