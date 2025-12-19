@@ -594,13 +594,149 @@ func (h apiHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         }
 }
 
+type ManifestIcon struct {
+        Src     string   `json:"src"`
+        Sizes   string   `json:"sizes"`
+        Type    string   `json:"type"`
+        Purpose string   `json:"purpose"`
+}
+
+type PWAManifest struct {
+        Name            string          `json:"name"`
+        ShortName       string          `json:"short_name"`
+        Version         string          `json:"version"`
+        Description     string          `json:"description"`
+        StartURL        string          `json:"start_url"`
+        Display         string          `json:"display"`
+        Orientation     string          `json:"orientation"`
+        BackgroundColor string          `json:"background_color"`
+        ThemeColor      string          `json:"theme_color"`
+        Icons           []ManifestIcon  `json:"icons"`
+        Categories      []string        `json:"categories"`
+        Lang            string          `json:"lang"`
+        Dir             string          `json:"dir"`
+}
+
 type spaHandler struct {
         staticPath string
         indexPath  string
         apiHandler apiHandler
 }
 
+func generateManifestJSON() PWAManifest {
+        appConfigLock.RLock()
+        privacyMode := appConfig.PrivacyMode
+        selectedModule := appConfig.SelectedModule
+        appConfigLock.RUnlock()
+
+        // Module data mapping
+        modules := map[string]map[string]interface{}{
+                "game-2048": {
+                        "name":        "Game 2048",
+                        "shortName":   "Game 2048",
+                        "description": "Простая, но затягивающая головоломка. Соединяйте плитки, чтобы собрать 2048 и наслаждайтесь бесконечными испытаниями.",
+                        "icon":        "game-icon",
+                        "categories":  []string{"games", "productivity"},
+                },
+                "calculator": {
+                        "name":        "Calculator",
+                        "shortName":   "Calculator",
+                        "description": "Simple and elegant calculator for everyday calculations. Fast, accurate, and easy to use.",
+                        "icon":        "calculator-icon",
+                        "categories":  []string{"productivity", "utilities"},
+                },
+                "notepad": {
+                        "name":        "Notepad",
+                        "shortName":   "Notepad",
+                        "description": "Simple notepad for quick notes and reminders. Keep your thoughts organized and accessible.",
+                        "icon":        "notepad-icon",
+                        "categories":  []string{"productivity", "utilities"},
+                },
+        }
+
+        // Select module data
+        var moduleData map[string]interface{}
+        iconBaseName := "favicon"
+
+        if privacyMode && selectedModule != "" && modules[selectedModule] != nil {
+                moduleData = modules[selectedModule]
+                iconBaseName = moduleData["icon"].(string)
+        } else {
+                // Default Camroid M manifest
+                moduleData = map[string]interface{}{
+                        "name":        "Camroid M",
+                        "shortName":   "Camroid M",
+                        "description": "Tactical camera with GPS, compass and precision overlays. Capture geotagged photos for fieldwork and surveying.",
+                        "categories":  []string{"photography", "utilities"},
+                }
+                iconBaseName = "favicon"
+        }
+
+        // Build icons array
+        icons := []ManifestIcon{
+                {
+                        Src:     "/" + iconBaseName + ".svg",
+                        Sizes:   "any",
+                        Type:    "image/svg+xml",
+                        Purpose: "any",
+                },
+                {
+                        Src:     "/" + iconBaseName + ".png",
+                        Sizes:   "192x192",
+                        Type:    "image/png",
+                        Purpose: "any maskable",
+                },
+                {
+                        Src:     "/" + iconBaseName + "-ios.svg",
+                        Sizes:   "any",
+                        Type:    "image/svg+xml",
+                        Purpose: "any",
+                },
+                {
+                        Src:     "/" + iconBaseName + "-android.svg",
+                        Sizes:   "any",
+                        Type:    "image/svg+xml",
+                        Purpose: "any",
+                },
+        }
+
+        categories := []string{"productivity"}
+        if val, ok := moduleData["categories"]; ok {
+                if catList, ok := val.([]string); ok {
+                        categories = catList
+                }
+        }
+
+        return PWAManifest{
+                Name:            moduleData["name"].(string),
+                ShortName:       moduleData["shortName"].(string),
+                Version:         "1.0.0",
+                Description:     moduleData["description"].(string),
+                StartURL:        "/",
+                Display:         "fullscreen",
+                Orientation:     "portrait",
+                BackgroundColor: "#0a0a0a",
+                ThemeColor:      "#0a0a0a",
+                Icons:           icons,
+                Categories:      categories,
+                Lang:            "en",
+                Dir:             "ltr",
+        }
+}
+
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+        // Handle manifest.json dynamically
+        if r.URL.Path == "/manifest.json" {
+                w.Header().Set("Content-Type", "application/manifest+json")
+                w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+                w.Header().Set("Pragma", "no-cache")
+                w.Header().Set("Expires", "0")
+                
+                manifest := generateManifestJSON()
+                json.NewEncoder(w).Encode(manifest)
+                return
+        }
+
         if strings.HasPrefix(r.URL.Path, "/api/") {
                 h.apiHandler.ServeHTTP(w, r)
                 return
