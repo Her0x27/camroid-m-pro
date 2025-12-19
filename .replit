@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "docker"]
+modules = ["nodejs-20", "docker", "go-1.24"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip"]
