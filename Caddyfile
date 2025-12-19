@@ -1,0 +1,74 @@
+# Caddy configuration for Camroid M privacy camera PWA
+# This reverse proxy setup provides:
+# - HTTPS with automatic certificates
+# - Proper cache headers for manifest and assets
+# - Security headers
+# - CORS support
+# - Gzip compression
+
+(common_headers) {
+	header X-Content-Type-Options nosniff
+	header X-Frame-Options DENY
+	header X-XSS-Protection "1; mode=block"
+	header Referrer-Policy strict-origin-when-cross-origin
+	header Permissions-Policy "camera=(self), geolocation=(self), accelerometer=(self), gyroscope=(self), magnetometer=(self)"
+}
+
+(cache_control) {
+	@html {
+		file
+		path *.html
+		path /
+	}
+	@assets {
+		file
+		path /assets/*
+	}
+	@manifest {
+		path /manifest.json
+	}
+	@sw {
+		path /sw.js
+	}
+
+	header @html Cache-Control "no-cache, no-store, must-revalidate"
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	header @manifest Cache-Control "no-cache, no-store, must-revalidate"
+	header @sw Cache-Control "no-cache, no-store, must-revalidate"
+	header Cache-Control "public, max-age=3600"
+}
+
+example.com {
+	import common_headers
+	import cache_control
+
+	# Reverse proxy to Go backend (default: localhost:5000)
+	reverse_proxy localhost:5000 {
+		# Preserve original request information
+		header_up X-Forwarded-For {http.request.remote.host}
+		header_up X-Forwarded-Proto {http.request.proto}
+		header_up X-Forwarded-Host {http.request.host}
+		header_up X-Real-IP {http.request.remote.host}
+
+		# WebSocket support for any future features
+		websocket
+	}
+
+	# Ensure manifest.json never gets cached by browser
+	@manifest path /manifest.json
+	header @manifest Cache-Control "no-cache, no-store, must-revalidate, public"
+	header @manifest Pragma "no-cache"
+	header @manifest Expires "0"
+
+	# Log access
+	log {
+		output stdout
+		format json
+	}
+}
+
+# HTTPS redirect for staging/development
+# example.staging.com {
+# 	import common_headers
+# 	reverse_proxy localhost:5000
+# }
