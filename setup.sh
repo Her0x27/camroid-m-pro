@@ -35,7 +35,7 @@ print_error() {
 main() {
     print_header "Camroid M - Development Setup"
     
-    print_step "Checking system requirements..."
+    print_step "Detecting system..."
     
     # Check OS
     OS_TYPE=$(uname -s)
@@ -51,15 +51,67 @@ main() {
     fi
     
     echo ""
-    print_step "Checking installed tools..."
+    
+    # Install system dependencies if on Linux
+    if [ "$OS_TYPE" = "Linux" ]; then
+        print_step "Installing system dependencies via apt..."
+        
+        # Update package manager
+        sudo apt-get update -qq || true
+        
+        # Install Node.js if not present
+        if ! command -v node &> /dev/null; then
+            print_step "Installing Node.js..."
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - || {
+                print_error "Failed to add NodeSource repository"
+                print_step "Trying alternative: apt-get install nodejs"
+                sudo apt-get install -y nodejs npm
+            }
+            sudo apt-get install -y nodejs npm
+        fi
+        
+        # Install Go if not present
+        if ! command -v go &> /dev/null; then
+            print_step "Installing Go..."
+            sudo apt-get install -y golang-go
+        fi
+        
+        # Install other dependencies
+        print_step "Installing build tools..."
+        sudo apt-get install -y build-essential git curl
+        
+    elif [ "$OS_TYPE" = "Darwin" ]; then
+        print_step "macOS detected - using Homebrew"
+        
+        if ! command -v brew &> /dev/null; then
+            print_error "Homebrew not found. Install from: https://brew.sh"
+            exit 1
+        fi
+        
+        # Install via Homebrew
+        if ! command -v node &> /dev/null; then
+            print_step "Installing Node.js..."
+            brew install node
+        fi
+        
+        if ! command -v go &> /dev/null; then
+            print_step "Installing Go..."
+            brew install go
+        fi
+        
+        print_step "Installing build tools..."
+        brew install git
+    fi
+    
+    echo ""
+    print_step "Verifying installed tools..."
     
     # Check Node.js
     if command -v node &> /dev/null; then
         NODE_VERSION=$(node --version)
         print_success "Node.js $NODE_VERSION"
     else
-        print_error "Node.js is not installed"
-        echo "  Install from: https://nodejs.org/"
+        print_error "Node.js installation failed"
         exit 1
     fi
     
@@ -68,7 +120,7 @@ main() {
         NPM_VERSION=$(npm --version)
         print_success "npm $NPM_VERSION"
     else
-        print_error "npm is not installed"
+        print_error "npm installation failed"
         exit 1
     fi
     
@@ -77,8 +129,7 @@ main() {
         GO_VERSION=$(go version | awk '{print $3}')
         print_success "Go $GO_VERSION"
     else
-        print_error "Go is not installed"
-        echo "  Install from: https://golang.org/dl/"
+        print_error "Go installation failed"
         exit 1
     fi
     
@@ -86,7 +137,7 @@ main() {
     if command -v git &> /dev/null; then
         print_success "Git installed"
     else
-        print_error "Git is not installed (optional but recommended)"
+        print_error "Git is not installed"
     fi
     
     echo ""
@@ -99,7 +150,7 @@ main() {
     print_success "Directories created"
     
     echo ""
-    print_step "Installing frontend dependencies..."
+    print_step "Installing frontend dependencies (npm install)..."
     
     # Install npm dependencies
     if npm install; then
@@ -112,39 +163,46 @@ main() {
     echo ""
     print_step "Verifying build tools..."
     
-    # Check key dependencies
+    # Check key npm packages
+    MISSING_PACKAGES=0
+    
     if npm list vite &> /dev/null; then
         print_success "Vite found"
     else
         print_error "Vite not found"
-        exit 1
+        MISSING_PACKAGES=$((MISSING_PACKAGES + 1))
     fi
     
     if npm list @vitejs/plugin-react &> /dev/null; then
         print_success "Vite React plugin found"
     else
         print_error "Vite React plugin not found"
-        exit 1
+        MISSING_PACKAGES=$((MISSING_PACKAGES + 1))
     fi
     
     if npm list typescript &> /dev/null; then
         print_success "TypeScript found"
     else
         print_error "TypeScript not found"
-        exit 1
+        MISSING_PACKAGES=$((MISSING_PACKAGES + 1))
     fi
     
     if npm list javascript-obfuscator &> /dev/null; then
         print_success "JavaScript Obfuscator found"
     else
         print_error "JavaScript Obfuscator not found"
-        exit 1
+        MISSING_PACKAGES=$((MISSING_PACKAGES + 1))
     fi
     
     if npm list terser &> /dev/null; then
         print_success "Terser found"
     else
         print_error "Terser not found"
+        MISSING_PACKAGES=$((MISSING_PACKAGES + 1))
+    fi
+    
+    if [ $MISSING_PACKAGES -gt 0 ]; then
+        print_error "Some npm packages are missing. Try: npm install --save"
         exit 1
     fi
     
@@ -164,7 +222,7 @@ main() {
     fi
     
     echo ""
-    print_header "Setup Complete!"
+    print_header "Setup Complete! ✅"
     
     echo "Next steps:"
     echo ""
@@ -178,12 +236,10 @@ main() {
     echo ""
     echo "3. Run production server:"
     echo "   ${CYAN}cd server-go && go run main.go${NC}"
-    echo "   or"
-    echo "   ${CYAN}cd server-go && ./camroid-server${NC} (after building)"
     echo ""
     echo "4. Deploy:"
-    echo "   - Netlify: ${CYAN}git push${NC} (auto-deploy on webhook)"
-    echo "   - Self-hosted: Use ${CYAN}Caddyfile${NC} or ${CYAN}nginx.conf${NC}"
+    echo "   - Netlify: ${CYAN}git push${NC} (auto-deploy)"
+    echo "   - Self-hosted: ${CYAN}caddy run --config Caddyfile${NC}"
     echo ""
 }
 
